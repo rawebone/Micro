@@ -11,6 +11,11 @@ class Application implements ApplicationInterface
     protected $handlers = array();
     
     /**
+     * @var \Micro\EnvironmentInterface
+     */
+    protected $environment;
+    
+    /**
      * @var \Micro\Request
      */
     protected $lastRequest;
@@ -25,11 +30,38 @@ class Application implements ApplicationInterface
      */
     protected $lastException;
     
+    public function __construct(EnvironmentInterface $env)
+    {
+        $this->environment = $env;
+    }
+    
+    /**
+     * Attaches a handler to the application, the handler provides the 
+     * configuration for access via HTTP and is executed upon matching.
+     * 
+     * @param \Micro\HandlerInterface $handler
+     */
     public function attach(HandlerInterface $handler)
     {
         $this->handlers[] = $handler;
     }
 
+    /**
+     * @return \Micro\EnvironmentInterface
+     */
+    function environment()
+    {
+        return $this->environment;
+    }
+    
+    /**
+     * Dispatches a route based on the current request. Boolean false is returned
+     * on error or no handler being found for the current request.
+     * 
+     * @param \Micro\Request $req Optional
+     * @param \Micro\Responder $resp Optional
+     * @return boolean
+     */
     public function run(Request $req = null, Responder $resp = null)
     {
         $this->reset();
@@ -46,6 +78,12 @@ class Application implements ApplicationInterface
         return false;
     }
     
+    /**
+     * Sends the response data associated with the last run to the client, if
+     * applicable.
+     * 
+     * 'return void
+     */
     public function send()
     {
         if (!is_null($this->lastResponse)) {

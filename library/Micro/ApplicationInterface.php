@@ -3,9 +3,11 @@ namespace Micro;
 
 interface ApplicationInterface
 {
+    function __construct(EnvironmentInterface $env);
     function attach(HandlerInterface $handler);
-    function run(Request $req = null, Responder $resp = null);
+    function environment();
     function lastRequest();
     function lastResponse();
     function lastException();
+    function run(Request $req = null, Responder $resp = null);
 }
