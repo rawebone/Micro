@@ -1,0 +1,26 @@
+{
+    "name": "rawebone/micro",
+    "description": "A small, get-the-job-done web framework with an emphasis on testability",
+    "license": "MIT",
+    "keywords": [ "web", "micro", "framework", "micro framework", "micro-framework", "testing", "testable" ],
+    "authors": [
+        {
+            "name": "Nick Rawe",
+            "email": "nrawe@reapit.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "symfony/http-foundation": "v2.4.0",
+        "rawebone/facade": "2.*@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*",
+        "mockery/mockery": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Micro\\": [ "library/", "tests/" ]
+        }
+    }
+}
