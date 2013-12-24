@@ -18,10 +18,17 @@ class EnvironmentMocker implements \Micro\EnvironmentInterface
         \Micro\Facades\Log::facadeSwapMock($log);
     }
     
+        
+    public function setView(\Rawebone\ViewModel\ViewEngineInterface $engine)
+    {
+        \Micro\Facades\View::facadeSwap($engine);
+    }
+    
     protected function registerFacades()
     {
         $fr = $this->facadesRegistered;
         \Micro\Facades\Log::facadeRegister($fr);
+        \Micro\Facades\View::facadeRegister($fr);
         $this->facadesRegistered = true;
     }
 }
