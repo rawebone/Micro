@@ -25,7 +25,11 @@ class RequestMatcher implements RequestMatcherInterface
             return false;
         }
         
-        if (!in_array($request->getContentType(), $h->contentTypes())) {
+        if (!$this->matchAccept($request, $h)) {
+            return false;
+        }
+        
+        if (!$this->matchContentType($request, $h)) {
             return false;
         }
         
@@ -47,6 +51,32 @@ class RequestMatcher implements RequestMatcherInterface
         }
         
         return false;
+    }
+    
+    protected function matchAccept(Request $req, HandlerInterface $handler)
+    {
+        $types = $handler->accept();
+        if (count($types) == 0) {
+            return true; // implies */*
+        }
+        
+        foreach ($req->getAcceptableContentTypes() as $accept) {
+            if (in_array($accept, $types)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    protected function matchContentType(Request $req, HandlerInterface $handler)
+    {
+        $type = $req->getContentType();
+        $accept = $handler->contentTypes();
+        if (!$type || count($accept) == 0) {
+            return true;
+        } else {
+            return in_array($type, $accept);
+        }
     }
     
     protected function decode(array $params)

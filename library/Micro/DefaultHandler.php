@@ -6,6 +6,7 @@ abstract class DefaultHandler implements HandlerInterface
     private $methods = array();
     private $contentTypes = array();
     private $conditions = array();
+    private $accept = array();
     private $uri;
     
     public function __construct()
@@ -33,6 +34,11 @@ abstract class DefaultHandler implements HandlerInterface
         return $this->conditions;
     }
     
+    public function accept()
+    {
+        return $this->accept;
+    }
+    
     /**
      * @return \Micro\DefaultHandler
      */
@@ -55,6 +61,16 @@ abstract class DefaultHandler implements HandlerInterface
     /**
      * @return \Micro\DefaultHandler
      */
+    protected function addAcceptable($type)
+    {
+        $this->accept[] = strtolower($type);
+        $this->accept = array_unique($this->accept);
+        return $this;
+    }
+    
+    /**
+     * @return \Micro\DefaultHandler
+     */
     protected function addMethod($method)
     {
         $this->methods[] = strtoupper($method);
@@ -69,6 +85,7 @@ abstract class DefaultHandler implements HandlerInterface
     {
         $this->addMethod("get");
         $this->addContentType("text/html");
+        $this->addAcceptable("*/*");
         return $this;
     }
     
