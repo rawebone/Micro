@@ -1,6 +1,6 @@
 {
     "name": "rawebone/micro",
-    "description": "A small, get-the-job-done web framework with an emphasis on testability",
+    "description": "A minimalist, get-the-job-done web framework with an emphasis on testability",
     "license": "MIT",
     "keywords": [ "web", "micro", "framework", "micro framework", "micro-framework", "testing", "testable" ],
     "authors": [
@@ -12,9 +12,9 @@
     "require": {
         "php": ">=5.3.0",
         "symfony/http-foundation": "v2.4.0",
-        "rawebone/facade": "2.*@dev",
-        "psr/log": "1.0.0",
-        "rawebone/view-model": "dev-master"
+        "rawebone/service-provider": "v1.0",
+        "rawebone/view-model": "dev-master",
+        "psr/log": "1.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "*",

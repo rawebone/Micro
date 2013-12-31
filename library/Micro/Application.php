@@ -98,7 +98,7 @@ class Application implements ApplicationInterface
     {
         return $this->lastRequest;
     }
-
+    
     /**
      * @return \Symfony\Component\HttpFoundation\Response
      */
@@ -117,15 +117,13 @@ class Application implements ApplicationInterface
     
     protected function reset()
     {
-        $this->lastRequest = null;
-        $this->lastResponse = null;
+        $this->lastRequest   = null;
+        $this->lastResponse  = null;
         $this->lastException = null;
     }
     
     protected function makeRequestAndResponse(Request $req = null, Responder $resp = null)
     {
-        $this->lastRequest = $this->lastResponse = null;
-        
         return array(
             $req ?: Request::createFromGlobals(),
             $resp ?: new Responder()
@@ -134,7 +132,7 @@ class Application implements ApplicationInterface
     
     protected function dispatch(Request $req, Responder $resp, HandlerInterface $handler)
     {
-        $this->lastRequest = $req;
+        $this->lastRequest   = $req;
         
         try {
             $return = $handler->handle($req, $resp);
