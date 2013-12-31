@@ -9,6 +9,11 @@ class Application implements ApplicationInterface
      * @var \Micro\HandlerInterface
      */
     protected $handlers = array();
+
+    /**
+     * @var \Micro\NotFoundHandlerInterface
+     */
+    protected $notFound;
     
     /**
      * @var \Micro\EnvironmentInterface
@@ -43,7 +48,11 @@ class Application implements ApplicationInterface
      */
     public function attach(HandlerInterface $handler)
     {
-        $this->handlers[] = $handler;
+        if ($handler instanceof NotFoundHandlerInterface) {
+            $this->notFound = $handler;
+        } else {
+            $this->handlers[] = $handler;
+        }
     }
 
     /**
@@ -75,7 +84,8 @@ class Application implements ApplicationInterface
                 return $this->dispatch($req, $resp, $handler);
             }
         }
-        return false;
+        
+        return $this->notFound($req, $resp);
     }
     
     /**
@@ -132,7 +142,7 @@ class Application implements ApplicationInterface
     
     protected function dispatch(Request $req, Responder $resp, HandlerInterface $handler)
     {
-        $this->lastRequest   = $req;
+        $this->lastRequest = $req;
         
         try {
             $return = $handler->handle($req, $resp);
@@ -147,5 +157,10 @@ class Application implements ApplicationInterface
             $this->lastException = $e;
             return false;
         }
+    }
+    
+    protected function notFound(Request $req, Responder $resp)
+    {
+        return $this->notFound ? $this->dispatch($req, $resp, $this->notFound) : false;
     }
 }
