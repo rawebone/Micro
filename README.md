@@ -1,5 +1,7 @@
 # Micro
 
+[![Build Status](https://travis-ci.org/rawebone/Micro.png?branch=master)](https://travis-ci.org/rawebone/Micro)
+
 This is a framework for creating web applications in a professional, no-thrills
 way with the goal of creating testable, easily maintainable applications while
 being capable of meeting your requirements without adding bloat.
