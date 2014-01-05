@@ -19,11 +19,33 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
         $this->runRequestMatch(false, $r, $h);
     }
     
+    public function testFailOnBadAccept()
+    {
+        $h = $this->getHandlerMock();
+        $h->shouldReceive("methods")
+          ->andReturn(array("GET"));
+        
+        $h->shouldReceive("accept")
+          ->andReturn(array("application/json"));
+        
+        $r = $this->getRequestMock();
+        $r->shouldReceive("getMethod")
+          ->andReturn("GET");
+        
+        $r->shouldReceive("getAcceptableContentTypes")
+          ->andReturn(array("text/html"));
+        
+        $this->runRequestMatch(false, $r, $h);
+    }
+    
     public function testFailOnBadContentType()
     {
         $h = $this->getHandlerMock();
         $h->shouldReceive("methods")
           ->andReturn(array("GET"));
+        
+        $h->shouldReceive("accept")
+          ->andReturn(array("*/*"));
         
         $h->shouldReceive("contentTypes")
           ->andReturn(array("text/html"));
@@ -31,6 +53,9 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
         $r = $this->getRequestMock();
         $r->shouldReceive("getMethod")
           ->andReturn("GET");
+        
+        $r->shouldReceive("getAcceptableContentTypes")
+          ->andReturn(array("*/*"));
         
         $r->shouldReceive("getContentType")
           ->andReturn("application/json");
@@ -44,6 +69,9 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
         $h->shouldReceive("methods")
           ->andReturn(array("GET"));
         
+        $h->shouldReceive("accept")
+          ->andReturn(array("*/*"));
+        
         $h->shouldReceive("contentTypes")
           ->andReturn(array("text/html"));
         
@@ -53,6 +81,9 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
         $r = $this->getRequestMock();
         $r->shouldReceive("getMethod")
           ->andReturn("GET");
+        
+        $r->shouldReceive("getAcceptableContentTypes")
+          ->andReturn(array("*/*"));
         
         $r->shouldReceive("getContentType")
           ->andReturn("text/html");
@@ -69,6 +100,9 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
         $h->shouldReceive("methods")
           ->andReturn(array("GET"));
         
+        $h->shouldReceive("accept")
+          ->andReturn(array("*/*"));
+        
         $h->shouldReceive("contentTypes")
           ->andReturn(array("text/html"));
         
@@ -81,6 +115,9 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
         $r = $this->getRequestMock();
         $r->shouldReceive("getMethod")
           ->andReturn("GET");
+        
+        $r->shouldReceive("getAcceptableContentTypes")
+          ->andReturn(array("*/*"));
         
         $r->shouldReceive("getContentType")
           ->andReturn("text/html");

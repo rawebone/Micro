@@ -31,4 +31,9 @@ class ExampleHandler implements HandlerInterface
     {
         return "/";
     }
+    
+    public function accept()
+    {
+        return array("*/*");
+    }
 }
