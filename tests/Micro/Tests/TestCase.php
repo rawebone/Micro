@@ -8,7 +8,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function getApp()
     {
-        return new \Micro\Application(new \Micro\Util\DumbEnvironment());
+        return new \Micro\Application(new \Micro\DefaultEnvironment());
     }
     
     /**
