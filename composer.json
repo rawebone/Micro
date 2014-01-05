@@ -11,14 +11,18 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "symfony/http-foundation": "v2.4.0",
+        "symfony/http-foundation": "2.4.*",
         "rawebone/service-provider": "1.0.*",
         "rawebone/view-model": "0.*",
-        "psr/log": "1.0.0"
+        "psr/log": "1.0.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "*",
-        "mockery/mockery": "*"
+        "phpunit/phpunit": "3.7.*",
+        "mockery/mockery": "0.8.*",
+        "symfony/browser-kit": "2.4.*"
+    },
+    "suggest": {
+        "symfony/browser-kit": "For use in running functional tests"
     },
     "autoload": {
         "psr-0": {
