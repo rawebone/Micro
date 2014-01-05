@@ -16,7 +16,7 @@ being capable of meeting your requirements without adding bloat.
 
 require_once "../vendor/autoload.php";
 
-$env = new \Micro\Util\DumbEnvironment();
+$env = new \Micro\DefaultEnvironment();
 $env->init();
 
 $app = new \Micro\Application($env);
