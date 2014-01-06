@@ -1,5 +1,5 @@
 <?php
-namespace Micro;
+namespace Micro\Testing;
 
 use Symfony\Component\BrowserKit\Client as BaseClient;
 use Symfony\Component\BrowserKit\Request as BaseReq;
@@ -30,10 +30,10 @@ class Client extends BaseClient
      */
     public function getApp()
     {
-        return $this->app;
+        return $this->application;
     }
     
-    protected function doRequest(Request $request)
+    protected function doRequest($request)
     {
         $this->application->run($request);
         return $this->application->lastResponse();
