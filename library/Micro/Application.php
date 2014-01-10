@@ -138,6 +138,8 @@ class Application implements TraceableInterface
      */
     public function run(Request $req = null, Responder $resp = null)
     {
+        $this->tracer->info("Beginning Request Cycle");
+        
         $this->reset();
         list($req, $resp)  = $this->prepareRequestAndResponse($req, $resp);
         $this->lastRequest = $req;
@@ -208,8 +210,10 @@ class Application implements TraceableInterface
                 throw new Exceptions\BadHandlerReturnException($handler);
             }
             $this->lastResponse = $return->prepare($req);
+            $this->tracer->notice("Dispatch was successful");
             
         } catch (\Exception $e) {
+            $this->tracer->critical("An error was encountered dispatching the request");
             $this->lastException = $e;
             $this->lastResponse  = false;
             
@@ -221,7 +225,7 @@ class Application implements TraceableInterface
     }
     
     /**
-     * Returns the appropriate Controller for the current Request.
+    1 * Returns the appropriate Controller for the current Request.
      * 
      * @param \Micro\Request $req
      * @return \Micro\Util\RequestMatcher|false
@@ -234,6 +238,7 @@ class Application implements TraceableInterface
             }
         }
         
+        $this->tracer->info("No matching end point for {$req->getUri()} discovered, returning not found controller: " . ($this->notFound ? "yes" : "no"));
         return $this->notFound ?: false;
     }
 }

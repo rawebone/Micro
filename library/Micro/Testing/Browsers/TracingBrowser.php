@@ -1,7 +1,9 @@
 <?php
-namespace Micro\Testing;
+namespace Micro\Testing\Browsers;
 
 use Micro\Application;
+use Micro\Testing\CollectorLogger;
+use Micro\Testing\TraceResult;
 use Psr\Log\NullLogger;
 
 /**
@@ -45,10 +47,12 @@ class TracingBrowser extends Browser
     
     protected function call($uri, $method, array $headers, $content = "")
     {
+        $this->tracer->info("Starting Trace");
         $this->application->tracer($this->tracer);
         $result = parent::call($uri, $method, $headers, $content);
         $this->application->tracer(new NullLogger());
         
+        $this->tracer->info("Trace Completed");
         $this->lastTrace = new TraceResult($this->lastRequest, $this->lastResponse, $this->tracer->collected());
         $this->tracer->reset();
         

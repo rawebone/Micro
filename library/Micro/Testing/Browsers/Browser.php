@@ -1,9 +1,10 @@
 <?php
-namespace Micro\Testing;
+namespace Micro\Testing\Browsers;
 
 use Micro\Application;
 use Micro\Request;
 use Micro\Responder;
+use Micro\Testing\BrowserInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class Browser implements BrowserInterface

@@ -26,6 +26,13 @@ class RequestMatcher implements RequestMatcherInterface, TraceableInterface
     public $compiledUri;
     
     /**
+     * The name of the encapsulated Controller instance.
+     *
+     * @var string
+     */
+    public $name;
+    
+    /**
      * The logger to be used to collect trace information.
      *
      * @var \Psr\Log\LoggerInterface
@@ -35,6 +42,7 @@ class RequestMatcher implements RequestMatcherInterface, TraceableInterface
     public function __construct(ControllerInterface $controller)
     {
         $this->controller = $controller;
+        $this->name = get_class($controller);
     }
     
     /**
@@ -45,12 +53,14 @@ class RequestMatcher implements RequestMatcherInterface, TraceableInterface
      */
     public function matches(Request $request)
     {
+        $this->tracer->info("Beginning match for $this->name");
         foreach ($this->getChecks() as $check) {
             if (!$this->{"match$check"}($request)) {
+                $this->tracer->notice("Matching $this->name failed on $check check");
                 return false;
             }
         }
-        
+        $this->tracer->info("Request fulfills requirements of $this->name");
         return true;
     }
     
