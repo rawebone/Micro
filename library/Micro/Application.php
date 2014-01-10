@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
  * @property \Micro\Request $lastRequest The last Request run through dispatcher (read-only)
  * @property \Symfony\Component\HttpFoundation\Response $lastResponse The last Response returned by the dispatcher (read-only)
  * @property \Exception $lastException The last exception caught by the dispatcher (read-only)
- * @property boolean $debugMode Whether the dispatcher is being used in a development context
  */
 class Application
 {

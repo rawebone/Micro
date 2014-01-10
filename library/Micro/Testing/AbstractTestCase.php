@@ -11,7 +11,9 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
      */
     protected function getClient()
     {
-        return new Client($this->getApplication());
+        $app = $this->getApplication();
+        $app->debugMode = true;
+        return new Client($app);
     }
     
     /**

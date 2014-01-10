@@ -45,7 +45,7 @@ class Client extends BaseClient
      */
     protected function filterRequest(BaseReq $request)
     {
-        $request = Request::create(
+        $new = Request::create(
                 $request->getUri(), 
                 $request->getMethod(), 
                 $request->getParameters(), 
@@ -55,8 +55,8 @@ class Client extends BaseClient
                 $request->getContent()
         );
         
-        $request->files->replace($this->filterFiles($request->files->all()));
-        return $request;
+        $new->files->replace($this->filterFiles($new->files->all()));
+        return $new;
     }
     
     

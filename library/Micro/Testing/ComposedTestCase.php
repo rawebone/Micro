@@ -8,7 +8,9 @@ trait ComposedTestCase
      */
     protected function getClient()
     {
-        return new Client($this->getApplication());
+        $app = $this->getApplication();
+        $app->debugMode = true;
+        return new Client($app);
     }
     
     /**
