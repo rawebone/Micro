@@ -12,7 +12,7 @@ trait ComposedTestCase
     }
     
     /**
-     * @return \Micro\ApplicationInterface
+     * @return \Micro\Application
      */
     abstract protected function getApplication();
 }

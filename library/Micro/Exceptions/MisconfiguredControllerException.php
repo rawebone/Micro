@@ -1,7 +1,7 @@
 <?php
 namespace Micro\Exceptions;
 
-class BadHandlerReturnException extends \Exception
+class MisconfiguredControllerException extends \Exception
 {
     protected $handler;
     
@@ -9,8 +9,8 @@ class BadHandlerReturnException extends \Exception
     {
         $this->handler = $handler;
         $msg = sprintf(
-                "Handler for URI '%s' produced an invalid return, should be a Response",
-                $handler->uri()
+                "The Controller '%s' has not been configured correctly.",
+                get_class($handler)
         );
         
         parent::__construct($msg);

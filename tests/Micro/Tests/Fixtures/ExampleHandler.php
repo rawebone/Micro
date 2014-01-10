@@ -3,9 +3,9 @@ namespace Micro\Tests\Fixtures;
 
 use Micro\Request;
 use Micro\Responder;
-use Micro\HandlerInterface;
+use Micro\ControllerInterface;
 
-class ExampleHandler implements HandlerInterface
+class ExampleHandler implements ControllerInterface
 {
     public function conditions()
     {

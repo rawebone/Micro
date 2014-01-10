@@ -1,7 +1,7 @@
 <?php
 namespace Micro\Util;
 
-use Micro\HandlerInterface;
+use Micro\ControllerInterface;
 
 /**
  * Provides Slim/Rails-esque URI matching with Symfony placeholders.
@@ -10,9 +10,9 @@ class UriCompiler
 {
     protected $handler;
     
-    public function __construct(HandlerInterface $handler)
+    public function __construct(ControllerInterface $controller)
     {
-        $this->handler = $handler;
+        $this->handler = $controller;
     }
     
     public function compileUri()
@@ -37,9 +37,9 @@ class UriCompiler
         return "(?<$name>$expr)";
     }
     
-    public static function compile(HandlerInterface $handler)
+    public static function compile(ControllerInterface $controller)
     {
-        $compiler = new static($handler);
+        $compiler = new static($controller);
         return $compiler->compileUri();
     }
 }

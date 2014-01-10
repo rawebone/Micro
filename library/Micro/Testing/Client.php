@@ -9,14 +9,14 @@ use Symfony\Component\BrowserKit\CookieJar;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-use Micro\ApplicationInterface;
+use Micro\Application;
 use Micro\Request;
 
 class Client extends BaseClient
 {
     protected $application;
     
-    public function __construct(ApplicationInterface $app, array $server = array(), History $history = null, CookieJar $cookieJar = null)
+    public function __construct(Application $app, array $server = array(), History $history = null, CookieJar $cookieJar = null)
     {
         $this->application = $app;
         $this->followRedirects = false;
@@ -26,7 +26,7 @@ class Client extends BaseClient
     }
 
     /**
-     * @return \Micro\ApplicationInterface
+     * @return \Micro\Application
      */
     public function getApp()
     {

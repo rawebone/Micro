@@ -141,7 +141,7 @@ class RequestMatcherTest extends \Micro\Tests\TestCase
     }
     
     /**
-     * @return \Micro\HandlerInterface
+     * @return \Micro\ControllerInterface
      */
     protected function getHandlerMock()
     {

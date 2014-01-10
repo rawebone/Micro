@@ -1,85 +1,109 @@
 <?php
 namespace Micro\Util;
 
-use Micro\HandlerInterface;
+use Micro\ControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 
+/**
+ * The RequestMatcher validates the core components of an HTTP request against
+ * a Controller instance.
+ */
 class RequestMatcher implements RequestMatcherInterface
 {
     /**
-     * @var \Micro\HandlerInterface
+     * @var \Micro\ControllerInterface
      */
-    protected $handler;
+    public $controller;
     
-    public function __construct(HandlerInterface $handler)
+    /**
+     * Stores the compiled URI regex.
+     *
+     * @var string
+     */
+    public $compiledUri;
+    
+    public function __construct(ControllerInterface $controller)
     {
-        $this->handler = $handler;
+        $this->controller = $controller;
     }
     
+    /**
+     * Performs the match against the Controller.
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return boolean
+     */
     public function matches(Request $request)
     {
-        $h = $this->handler;
-        
-        if (!in_array($request->getMethod(), $h->methods())) {
-            return false;
-        }
-        
-        if (!$this->matchAccept($request, $h)) {
-            return false;
-        }
-        
-        if (!$this->matchContentType($request, $h)) {
-            return false;
-        }
-        
-        if (!$this->matchUri($request, $h)) {
-            return false;
+        foreach ($this->getChecks() as $check) {
+            if (!$this->{"match$check"}($request)) {
+                return false;
+            }
         }
         
         return true;
     }
     
-    protected function matchUri(Request $req, HandlerInterface $handler)
+    /**
+     * Returns the parameters from the URI for the given Request. This should
+     * be called *after* the Request has been confirmed to match Controller.
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return array
+     */
+    public function params(Request $request)
     {
-        $uri = UriCompiler::compile($handler);
-        
         $matches = array();
-        if (preg_match($uri, rawurldecode($req->getPathInfo()), $matches)) {
-            $req->attributes->add($this->decode($matches));
-            return true;
-        }
+        $match = preg_match($this->getUri(), rawurldecode($request->getPathInfo()), $matches);
         
-        return false;
+        if ($match !== false && $match > 0) {
+            return $this->decodeParameters($matches);
+        }
     }
     
-    protected function matchAccept(Request $req, HandlerInterface $handler)
+    /**
+     * Matches whether the HTTP method is valid for the Controller.
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $req
+     * @return boolean
+     */
+    protected function matchMethod(Request $req)
     {
-        $types = $handler->accept();
-        if (count($types) == 0) {
-            return true; // implies */*
-        }
-        
-        foreach ($req->getAcceptableContentTypes() as $accept) {
-            if (in_array($accept, $types)) {
-                return true;
-            }
-        }
-        return false;
+        return in_array($req->getMethod(), $this->controller->methods());
     }
     
-    protected function matchContentType(Request $req, HandlerInterface $handler)
+    /**
+     * Matches whether the URI is valid for the Controller.
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $req
+     * @return boolean
+     */
+    protected function matchUri(Request $req)
     {
-        $type = $req->getContentType();
-        $accept = $handler->contentTypes();
-        if (!$type || count($accept) == 0) {
-            return true;
-        } else {
-            return in_array($type, $accept);
-        }
+        $match = preg_match($this->getUri(), rawurldecode($req->getPathInfo()));
+        return ($match !== false && $match > 0);
     }
     
-    protected function decode(array $params)
+    /**
+     * Matches whether the Controller will accept the Request.
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $req
+     * @return boolean
+     */
+    protected function matchAccepts(Request $req)
+    {
+        return $this->controller->accepts($req);
+    }
+    
+    /**
+     * Process the array for strings parameters which have been matched and
+     * ensure they are valid for consumption by the controller.
+     * 
+     * @param array $params
+     * @return array
+     */
+    protected function decodeParameters(array $params)
     {
         $result = array();
         foreach ($params as $key => $value) {
@@ -88,5 +112,29 @@ class RequestMatcher implements RequestMatcherInterface
             }
         }
         return $result;
+    }
+    
+    /**
+     * Returns the Compiled URI for the Controller.
+     * 
+     * @return string
+     */
+    protected function getUri()
+    {
+        if (!$this->compiledUri) {
+            $this->compiledUri = UriCompiler::compile($this->controller);
+        }
+        
+        return $this->compiledUri;
+    }
+    
+    /**
+     * Returns the names of methods that should be called to validate a request.
+     * 
+     * @return array
+     */
+    protected function getChecks()
+    {
+        return array("Method", "Uri", "Accepts");
     }
 }

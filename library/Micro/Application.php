@@ -3,66 +3,94 @@ namespace Micro;
 
 use Symfony\Component\HttpFoundation\Response;
 
-class Application implements ApplicationInterface
+/**
+ * The Dispatcher class provides the handling for routing calls from an
+ * HTTP request to a Controller.
+ * 
+ * @property \Micro\EnvironmentInterface $environment The Environment instance attached to the dispatcher (read-only)
+ * @property \Micro\Request $lastRequest The last Request run through dispatcher (read-only)
+ * @property \Symfony\Component\HttpFoundation\Response $lastResponse The last Response returned by the dispatcher (read-only)
+ * @property \Exception $lastException The last exception caught by the dispatcher (read-only)
+ * @property boolean $debugMode Whether the dispatcher is being used in a development context
+ */
+class Application
 {
     /**
-     * @var \Micro\HandlerInterface
+     * Whether the dispatcher is being used in a development context.
+     *
+     * @var boolean
      */
-    protected $handlers = array();
+    public $debugMode = false;
+    
+    /**
+     * An array containing the Controllers registered in the application,
+     * encapsulated by a RequestMatcher. Encapsulation allows for caching
+     * of regex compilation so that repeat actions are faster.
+     * 
+     * @var \Micro\Util\RequestMatcher
+     */
+    protected $controllers = array();
 
     /**
-     * @var \Micro\NotFoundHandlerInterface
+     * The Controller that should be called when a URI cannot be matched,
+     * encapsulated by a RequestMatcher. Encapsulation allows for caching
+     * of regex compilation so that repeat actions are faster.
+     * 
+     * @var \Micro\Util\RequestMatcher
      */
     protected $notFound;
     
     /**
-     * @var \Micro\EnvironmentInterface
+     * Stores the names of properties which should be available in a read-only
+     * context.
+     *
+     * @var array
      */
+    protected $readOnly = array();
+    
+    // Read-Only Properties
     protected $environment;
-    
-    /**
-     * @var \Micro\Request
-     */
     protected $lastRequest;
-    
-    /**
-     * @var \Symfony\Component\HttpFoundation\Response
-     */
     protected $lastResponse;
-    
-    /**
-     * @var \Exception
-     */
     protected $lastException;
     
     public function __construct(EnvironmentInterface $env)
     {
         $this->environment = $env;
+        $this->readOnly = array("environment", "lastRequest", "lastResponse", "lastException");
     }
     
     /**
-     * Attaches a handler to the application, the handler provides the 
-     * configuration for access via HTTP and is executed upon matching.
+     * Handles access to read-only variables.
      * 
-     * @param \Micro\HandlerInterface $handler
+     * @param string $name
+     * @return mixed
      */
-    public function attach(HandlerInterface $handler)
+    public function __get($name)
     {
-        if ($handler instanceof NotFoundHandlerInterface) {
-            $this->notFound = $handler;
+        return (in_array($name, $this->readOnly) ? $this->$name : null);
+    }
+    
+    /**
+     * Attaches a controller to the dispatcher. The controller provides the 
+     * configuration for access via HTTP and is executed upon matching. If an
+     * instance of the \Micro\NotFoundControllerInterface is passed, this will
+     * be registered for invokation when a request is not fulfilled by normal
+     * methods.
+     * 
+     * @param \Micro\ControllerInterface $controller
+     */
+    public function attach(ControllerInterface $controller)
+    {
+        $matcher = new Util\RequestMatcher($controller);
+        
+        if ($controller instanceof NotFoundControllerInterface) {
+            $this->notFound = $matcher;
         } else {
-            $this->handlers[] = $handler;
+            $this->controllers[] = $matcher;
         }
     }
 
-    /**
-     * @return \Micro\EnvironmentInterface
-     */
-    function environment()
-    {
-        return $this->environment;
-    }
-    
     /**
      * Dispatches a route based on the current request. Boolean false is returned
      * on error or no handler being found for the current request.
@@ -74,25 +102,23 @@ class Application implements ApplicationInterface
     public function run(Request $req = null, Responder $resp = null)
     {
         $this->reset();
+        list($req, $resp)  = $this->prepareRequestAndResponse($req, $resp);
+        $this->lastRequest = $req;
         
-        list($req, $resp) = $this->makeRequestAndResponse($req, $resp);
-        
-        foreach ($this->handlers as $handler) {
-            $matcher = new Util\RequestMatcher($handler);
-            
-            if ($matcher->matches($req)) {
-                return $this->dispatch($req, $resp, $handler);
-            }
+        $controller = $this->findController($req);
+        if ($controller) {
+            $req->request->add($controller->params($req));
+            return $this->dispatch($req, $resp, $controller->controller);
+        } else {
+            return false;
         }
-        
-        return $this->notFound($req, $resp);
     }
     
     /**
      * Sends the response data associated with the last run to the client, if
      * applicable.
      * 
-     * 'return void
+     * @return void
      */
     public function send()
     {
@@ -102,29 +128,10 @@ class Application implements ApplicationInterface
     }
     
     /**
-     * @return \Micro\Request
+     * Prepares the Dispatchers state for a request.
+     * 
+     * @return void
      */
-    public function lastRequest()
-    {
-        return $this->lastRequest;
-    }
-    
-    /**
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function lastResponse()
-    {
-        return $this->lastResponse;
-    }
-    
-    /**
-     * @return \Exception
-     */
-    public function lastException()
-    {
-        return $this->lastException;
-    }
-    
     protected function reset()
     {
         $this->lastRequest   = null;
@@ -132,7 +139,15 @@ class Application implements ApplicationInterface
         $this->lastException = null;
     }
     
-    protected function makeRequestAndResponse(Request $req = null, Responder $resp = null)
+    /**
+     * Establishes the object instances that should be used for requests 
+     * and responses.
+     * 
+     * @param \Micro\Request $req
+     * @param \Micro\Responder $resp
+     * @return array|\Micro\Request|\Micro\Response
+     */
+    protected function prepareRequestAndResponse(Request $req = null, Responder $resp = null)
     {
         return array(
             $req ?: Request::createFromGlobals(),
@@ -140,27 +155,48 @@ class Application implements ApplicationInterface
         );
     }
     
-    protected function dispatch(Request $req, Responder $resp, HandlerInterface $handler)
+    /**
+     * Process a request on a handler, validating the return and handling errors.
+     * 
+     * @throws \Exception
+     * @param \Micro\Request $req
+     * @param \Micro\Responder $resp
+     * @param \Micro\ControllerInterface $handler
+     * @return boolean
+     */
+    protected function dispatch(Request $req, Responder $resp, ControllerInterface $handler)
     {
-        $this->lastRequest = $req;
-        
         try {
-            $return = $handler->handle($req, $resp);
-            if (!$return instanceof Response) {
+            if (!($return = $handler->handle($req, $resp)) instanceof Response) {
                 throw new Exceptions\BadHandlerReturnException($handler);
             }
-            
-            $this->lastResponse = $return;
-            return true;
+            $this->lastResponse = $return->prepare($req);
             
         } catch (\Exception $e) {
             $this->lastException = $e;
-            return false;
+            $this->lastResponse  = false;
+            
+            if ($this->debugMode) {
+                throw $e;
+            } 
         }
+        return ($this->lastResponse !== false);
     }
     
-    protected function notFound(Request $req, Responder $resp)
+    /**
+     * Returns the appropriate Controller for the current Request.
+     * 
+     * @param \Micro\Request $req
+     * @return \Micro\Util\RequestMatcher|false
+     */
+    protected function findController(Request $req)
     {
-        return $this->notFound ? $this->dispatch($req, $resp, $this->notFound) : false;
+        foreach ($this->controllers as $controller) {
+            if ($controller->matches($req)) {
+                return $controller;
+            }
+        }
+        
+        return $this->notFound ?: false;
     }
 }

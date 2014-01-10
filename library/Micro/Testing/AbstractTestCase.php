@@ -15,7 +15,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @return \Micro\ApplicationInterface
+     * @return \Micro\Application
      */
     abstract protected function getApplication();
 }

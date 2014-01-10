@@ -1,22 +1,20 @@
 <?php
 namespace Micro;
 
-abstract class DefaultHandler implements HandlerInterface
+/**
+ * The DefaultController provides a convenient way of configuring Controllers
+ * for use in projects.
+ */
+abstract class DefaultHandler implements ControllerInterface
 {
-    private $methods = array();
-    private $contentTypes = array();
-    private $conditions = array();
-    private $accept = array();
-    private $uri;
+    protected $methods = array();
+    protected $conditions = array();
+    protected $uri;
     
     public function __construct()
     {
         $this->configure();
-    }
-    
-    public function contentTypes()
-    {
-        return $this->contentTypes;
+        $this->validate();
     }
 
     public function methods()
@@ -34,9 +32,9 @@ abstract class DefaultHandler implements HandlerInterface
         return $this->conditions;
     }
     
-    public function accept()
+    public function accepts(Request $req)
     {
-        return $this->accept;
+        return true;
     }
     
     /**
@@ -45,26 +43,6 @@ abstract class DefaultHandler implements HandlerInterface
     protected function addCondition($name, $regex)
     {
         $this->conditions[$name] = $regex;
-        return $this;
-    }
-    
-    /**
-     * @return \Micro\DefaultHandler
-     */
-    protected function addContentType($type)
-    {
-        $this->contentTypes[] = strtolower($type);
-        $this->contentTypes = array_unique($this->contentTypes);
-        return $this;
-    }
-    
-    /**
-     * @return \Micro\DefaultHandler
-     */
-    protected function addAcceptable($type)
-    {
-        $this->accept[] = strtolower($type);
-        $this->accept = array_unique($this->accept);
         return $this;
     }
     
@@ -81,22 +59,29 @@ abstract class DefaultHandler implements HandlerInterface
     /**
      * @return \Micro\DefaultHandler
      */
-    protected function setDefaults()
-    {
-        $this->addMethod("get");
-        $this->addContentType("text/html");
-        $this->addAcceptable("*/*");
-        return $this;
-    }
-    
-    /**
-     * @return \Micro\DefaultHandler
-     */
     protected function setUri($uri)
     {
         $this->uri = $uri;
         return $this;
     }
 
+    /**
+     * Ensures that the Controller is safe for use in the Application.
+     * 
+     * @throws \Micro\Exceptions\MisconfiguredControllerException
+     * @return void
+     */
+    protected function validate()
+    {
+        if (is_null($this->uri)) {
+            throw new Exceptions\MisconfiguredControllerException($this);
+        }
+    }
+    
+    /**
+     * Prepares the Controller for use.
+     * 
+     * @return void
+     */
     abstract protected function configure();
 }
