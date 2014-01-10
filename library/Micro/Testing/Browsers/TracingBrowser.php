@@ -47,6 +47,7 @@ class TracingBrowser extends Browser
     
     protected function call($uri, $method, array $headers, $content = "")
     {
+        $this->lastTrace = null;
         $this->tracer->info("Starting Trace");
         $this->application->tracer($this->tracer);
         $result = parent::call($uri, $method, $headers, $content);
