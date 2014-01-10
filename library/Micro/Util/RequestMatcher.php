@@ -2,6 +2,8 @@
 namespace Micro\Util;
 
 use Micro\ControllerInterface;
+use Micro\TraceableInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 
@@ -9,7 +11,7 @@ use Symfony\Component\HttpFoundation\RequestMatcherInterface;
  * The RequestMatcher validates the core components of an HTTP request against
  * a Controller instance.
  */
-class RequestMatcher implements RequestMatcherInterface
+class RequestMatcher implements RequestMatcherInterface, TraceableInterface
 {
     /**
      * @var \Micro\ControllerInterface
@@ -22,6 +24,13 @@ class RequestMatcher implements RequestMatcherInterface
      * @var string
      */
     public $compiledUri;
+    
+    /**
+     * The logger to be used to collect trace information.
+     *
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $tracer;
     
     public function __construct(ControllerInterface $controller)
     {
@@ -60,6 +69,17 @@ class RequestMatcher implements RequestMatcherInterface
         if ($match !== false && $match > 0) {
             return $this->decodeParameters($matches);
         }
+    }
+    
+    /**
+     * Sets the tracer to be used.
+     * 
+     * @param \Psr\Log\LoggerInterface $log
+     * @return void
+     */
+    public function tracer(LoggerInterface $log)
+    {
+        $this->tracer = $log;
     }
     
     /**

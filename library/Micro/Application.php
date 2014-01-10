@@ -2,6 +2,8 @@
 namespace Micro;
 
 use Symfony\Component\HttpFoundation\Response;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * The Dispatcher class provides the handling for routing calls from an
@@ -12,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @property \Symfony\Component\HttpFoundation\Response $lastResponse The last Response returned by the dispatcher (read-only)
  * @property \Exception $lastException The last exception caught by the dispatcher (read-only)
  */
-class Application
+class Application implements TraceableInterface
 {
     /**
      * Whether the dispatcher is being used in a development context.
@@ -47,6 +49,15 @@ class Application
      */
     protected $readOnly = array();
     
+    /**
+     * A PSR-3 Compliant Logger used for tracing a request through the 
+     * application. This logger should be set via the `tracer()` method.
+     *
+     * @var \Psr\Log\LoggerInterface
+     * @see tracer()
+     */
+    protected $tracer;
+    
     // Read-Only Properties
     protected $environment;
     protected $lastRequest;
@@ -57,6 +68,7 @@ class Application
     {
         $this->environment = $env;
         $this->readOnly = array("environment", "lastRequest", "lastResponse", "lastException");
+        $this->tracer = new NullLogger(); 
     }
     
     /**
@@ -71,6 +83,26 @@ class Application
     }
     
     /**
+     * Sets the logger to be used to collect trace information and applies
+     * it to the underlying application Controllers.
+     * 
+     * @param \Psr\Log\LoggerInterface $log
+     * @return void
+     */
+    public function tracer(LoggerInterface $log)
+    {
+        $this->tracer = $log;
+        foreach ($this->controllers as $controller) {
+            if ($controller instanceof TraceableInterface) {
+                $controller->tracer($log);
+            }
+            if ($controller->controller instanceof TraceableInterface) {
+                $controller->controller->tracer($log);
+            }
+        }
+    }
+    
+    /**
      * Attaches a controller to the dispatcher. The controller provides the 
      * configuration for access via HTTP and is executed upon matching. If an
      * instance of the \Micro\NotFoundControllerInterface is passed, this will
@@ -78,10 +110,16 @@ class Application
      * methods.
      * 
      * @param \Micro\ControllerInterface $controller
+     * @return void
      */
     public function attach(ControllerInterface $controller)
     {
         $matcher = new Util\RequestMatcher($controller);
+        $matcher->tracer($this->tracer);
+        
+        if ($controller instanceof TraceableInterface) {
+            $controller->tracer($this->tracer);
+        }
         
         if ($controller instanceof NotFoundControllerInterface) {
             $this->notFound = $matcher;
