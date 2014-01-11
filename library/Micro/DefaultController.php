@@ -5,7 +5,7 @@ namespace Micro;
  * The DefaultController provides a convenient way of configuring Controllers
  * for use in projects.
  */
-abstract class DefaultHandler implements ControllerInterface
+abstract class DefaultController implements ControllerInterface
 {
     protected $methods = array();
     protected $conditions = array();
@@ -38,7 +38,7 @@ abstract class DefaultHandler implements ControllerInterface
     }
     
     /**
-     * @return \Micro\DefaultHandler
+     * @return \Micro\DefaultController
      */
     protected function addCondition($name, $regex)
     {
@@ -47,7 +47,7 @@ abstract class DefaultHandler implements ControllerInterface
     }
     
     /**
-     * @return \Micro\DefaultHandler
+     * @return \Micro\DefaultController
      */
     protected function addMethod($method)
     {
@@ -57,7 +57,7 @@ abstract class DefaultHandler implements ControllerInterface
     }
     
     /**
-     * @return \Micro\DefaultHandler
+     * @return \Micro\DefaultController
      */
     protected function setUri($uri)
     {
