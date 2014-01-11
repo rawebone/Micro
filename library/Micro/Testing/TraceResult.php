@@ -44,7 +44,7 @@ class TraceResult
         $str = "";
         foreach ($this->logs as $entry) {
             $str .= sprintf(
-                    "%s %f\ts\n",
+                    "%s %f\t%s\n",
                     "({$entry["level"]})",
                     $entry["timestamp"],
                     $entry["message"]
