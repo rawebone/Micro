@@ -38,7 +38,7 @@ class ProfileResult
                 "%s\n\n%s\n\n%s\n\n", 
                 (string)$this->request, 
                 (string)$this->response, 
-                "Process took $this->time seconds and consumed $memory MB of system memory"
+                "Process took $this->time seconds and consumed $this->memory MB of system memory"
         );
     }
 }
