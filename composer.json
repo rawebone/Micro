@@ -2,7 +2,7 @@
     "name": "rawebone/micro",
     "description": "A minimalist, get-the-job-done web framework with an emphasis on testability",
     "license": "MIT",
-    "keywords": [ "web", "micro", "framework", "micro framework", "micro-framework", "testing", "testable" ],
+    "keywords": [ "http", "minimal", "testing", "testable", "web", "micro" ],
     "authors": [
         {
             "name": "Nick Rawe",
