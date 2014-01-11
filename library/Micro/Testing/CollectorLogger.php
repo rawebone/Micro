@@ -13,8 +13,8 @@ class CollectorLogger extends AbstractLogger
     
     public function log($level, $message, array $context = array())
     {
-        $stamp = microtime(true);
-        $this->collected[] = compact("level", "message", "stamp", "context");
+        $timestamp = microtime(true);
+        $this->collected[] = compact("level", "message", "timestamp", "context");
     }
     
     /**
