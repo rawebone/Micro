@@ -3,12 +3,13 @@ namespace Micro\Tests\Utils;
 
 use Mockery as m;
 use Micro\Util\UriCompiler;
+use Micro\Tests\TestCase;
 
-class UriCompilerTest extends \Micro\Tests\TestCase
+class UriCompilerTest extends TestCase
 {
     public function testBasic()
     {
-        $mock = m::mock("\\Micro\\HandlerInterface");
+        $mock = m::mock("\\Micro\\ControllerInterface");
         $mock->shouldReceive("uri")
              ->andReturn("/");
         
@@ -20,7 +21,7 @@ class UriCompilerTest extends \Micro\Tests\TestCase
     
     public function testWithConditions()
     {
-        $mock = m::mock("\\Micro\\HandlerInterface");
+        $mock = m::mock("\\Micro\\ControllerInterface");
         $mock->shouldReceive("uri")
              ->andReturn("/{id}/{name}");
         
@@ -28,5 +29,17 @@ class UriCompilerTest extends \Micro\Tests\TestCase
              ->andReturn(array("id" => "\d+", "name" => "\w+"));
         
         $this->assertEquals("#^/(?<id>\d+)/(?<name>\w+)$#", UriCompiler::compile($mock));
+    }
+    
+    public function testWithParametersNoConditions()
+    {
+        $mock = m::mock("\\Micro\\ControllerInterface");
+        $mock->shouldReceive("uri")
+             ->andReturn("/{id}/{name}");
+        
+        $mock->shouldReceive("conditions")
+             ->andReturn(array());
+        
+        $this->assertEquals("#^/(?<id>[^/]+)/(?<name>[^/]+)$#", UriCompiler::compile($mock));
     }
 }
