@@ -200,14 +200,14 @@ class Application implements TraceableInterface
      * @throws \Exception
      * @param \Micro\Request $req
      * @param \Micro\Responder $resp
-     * @param \Micro\ControllerInterface $handler
+     * @param \Micro\ControllerInterface $controller
      * @return boolean
      */
-    protected function dispatch(Request $req, Responder $resp, ControllerInterface $handler)
+    protected function dispatch(Request $req, Responder $resp, ControllerInterface $controller)
     {
         try {
-            if (!($return = $handler->handle($req, $resp)) instanceof Response) {
-                throw new Exceptions\BadHandlerReturnException($handler);
+            if (!($return = $controller->handle($req, $resp)) instanceof Response) {
+                throw new Exceptions\BadHandlerReturnException($controller);
             }
             $this->lastResponse = $return->prepare($req);
             $this->tracer->notice("Dispatch was successful");
@@ -234,6 +234,7 @@ class Application implements TraceableInterface
     {
         foreach ($this->controllers as $controller) {
             if ($controller->matches($req)) {
+                $this->tracer->info("Found Controller {$controller->name}");
                 return $controller;
             }
         }
