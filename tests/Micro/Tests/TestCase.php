@@ -1,28 +1,29 @@
 <?php
 namespace Micro\Tests;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+use Prophecy\Prophet;
+
+class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @return \Micro\Application
+     * The prophecy instance to be used for mocking purposes.
+     *
+     * @var \Prophecy\Prophet
      */
-    protected function getApp()
+    protected $prophet;
+    
+    public function setUp()
     {
-        return new \Micro\Application(new \Micro\DefaultEnvironment());
+        $this->prophet = $this->getProphet();
     }
     
-    /**
-     * @return \Micro\Request
-     */
-    protected function getReq()
+    public function tearDown()
     {
-        return \Micro\Request::create(
-                "/", 
-                "GET", 
-                array(),
-                array(),
-                array(),
-                array("CONTENT_TYPE" => "text/html")
-        );
+        $this->prophet->checkPredictions();
+    }
+    
+    protected function getProphet()
+    {
+        return new Prophet();
     }
 }

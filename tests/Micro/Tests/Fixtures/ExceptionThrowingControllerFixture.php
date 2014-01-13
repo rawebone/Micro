@@ -1,10 +1,10 @@
 <?php
 namespace Micro\Tests\Fixtures;
 
-class FailingHandler extends ExampleHandler
+class ExceptionThrowingControllerFixture extends ValidControllerFixture
 {
     public function handle(\Micro\Request $req, \Micro\Responder $resp)
     {
-        return null;
+        throw new \Exception("Test");
     }
 }

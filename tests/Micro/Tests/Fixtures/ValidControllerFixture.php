@@ -3,18 +3,13 @@ namespace Micro\Tests\Fixtures;
 
 use Micro\Request;
 use Micro\Responder;
-use Micro\HandlerInterface;
+use Micro\ControllerInterface;
 
-class ExampleHandler implements HandlerInterface
+class ValidControllerFixture implements ControllerInterface
 {
     public function conditions()
     {
         return array();
-    }
-
-    public function contentTypes()
-    {
-        return array("html");
     }
 
     public function handle(Request $req, Responder $resp)
@@ -32,8 +27,8 @@ class ExampleHandler implements HandlerInterface
         return "/";
     }
     
-    public function accept()
+    public function accepts(Request $req)
     {
-        return array("*/*");
+        return true;
     }
 }
