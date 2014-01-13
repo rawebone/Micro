@@ -28,9 +28,8 @@ class RequestMatcher implements TraceableInterface, MatcherInterface
      */
     protected $matchers = array();
     
-    public function __construct(ControllerInterface $controller, LoggerInterface $tracer)
+    public function __construct(LoggerInterface $tracer)
     {
-        $this->controller = $controller;
         $this->tracer = $tracer;
         $this->matchers = $this->getMatchers();
     }
