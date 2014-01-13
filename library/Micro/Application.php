@@ -164,9 +164,13 @@ class Application implements TraceableInterface
         $this->lastRequest = $req;
         
         $controller = $this->findController($req);
-        if ($controller) {
+        if ($controller instanceof NotFoundControllerInterface) {
+            return $this->dispatch($req, $resp, $controller);
+            
+        } else if ($controller instanceof ControllerInterface) {
             $this->addParameters($controller, $req);
             return $this->dispatch($req, $resp, $controller);
+            
         } else {
             return false;
         }

@@ -109,4 +109,19 @@ class ApplicationTest extends TestCase
         $this->assertEquals(false, $app->run($req));
         $this->assertInstanceOf("Micro\\Exceptions\\BadHandlerReturnException", $app->lastException);
     }
+
+    /**
+     * @expectedException \Micro\Exceptions\BadHandlerReturnException
+     */
+    public function testNotFoundCalledOnBadRequest()
+    {
+        $notFound = $this->prophet->prophesize("Micro\\NotFoundControllerInterface");
+        
+        $app = new Application();
+        $app->debugMode = true;
+        $app->attach($notFound->reveal());
+        
+        $req = Request::create("/");
+        $app->run($req);
+    }
 }
