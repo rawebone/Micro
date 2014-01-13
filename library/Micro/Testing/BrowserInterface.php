@@ -21,49 +21,49 @@ interface BrowserInterface
     /**
      * Performs a GET request against the application with the specified URI,
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function get($uri, array $headers = array());
     
     /**
      * Performs a POST request against the application with the specified URI,
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function post($uri, array $headers = array(), $content = "");
     
     /**
      * Performs a HEAD request against the application with the specified URI.
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function head($uri, array $headers = array());
     
     /**
      * Performs a PATCH request against the application with the specified URI.
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function patch($uri, array $headers = array(), $content = "");
     
     /**
      * Performs a PUT request against the application with the specified URI.
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function put($uri, array $headers = array(), $content = "");
     
     /**
      * Performs a DELETE request against the application with the specified URI.
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function delete($uri, array $headers = array(), $content = "");
     
     /**
      * Performs an OPTIONS request against the application with the specified URI.
      * 
-     * @return \Symfony\Component\HttpFoundation\Response|false
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     function options($uri, array $headers = array(), $content = "");
     

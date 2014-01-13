@@ -118,6 +118,6 @@ class Browser implements BrowserInterface
             return;
         }
         
-        $this->lastResponse = $responder->standard("Unknown Application State", 503);
+        $this->lastResponse = $responder->standard("Not Found", 404);
     }
 }
