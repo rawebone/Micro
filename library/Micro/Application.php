@@ -1,6 +1,9 @@
 <?php
 namespace Micro;
 
+use Micro\Matching\MatcherInterface;
+use Micro\Matching\RequestMatcher;
+use Micro\Util\UrlTools;
 use Symfony\Component\HttpFoundation\Response;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -9,10 +12,12 @@ use Psr\Log\NullLogger;
  * The Dispatcher class provides the handling for routing calls from an
  * HTTP request to a Controller.
  * 
- * @property \Micro\EnvironmentInterface $environment The Environment instance attached to the dispatcher (read-only)
  * @property \Micro\Request $lastRequest The last Request run through dispatcher (read-only)
  * @property \Symfony\Component\HttpFoundation\Response $lastResponse The last Response returned by the dispatcher (read-only)
  * @property \Exception $lastException The last exception caught by the dispatcher (read-only)
+ * @property \Micro\Matching\MatcherInterface $matcher The matcher in use by the application (read-only)
+ * @property \Micro\Util\UrlTools $ut The UrlTools instance in use by the application (read-only)
+ * @property \Psr\Log\LoggerInterface $tracer The current logger being used to trace internal activity. This can be set via tracer() (read-only)
  */
 class Application implements TraceableInterface
 {
@@ -58,17 +63,32 @@ class Application implements TraceableInterface
      */
     protected $tracer;
     
+    /**
+     * The object which should be used to determine whether the request
+     * matches a controller.
+     *
+     * @var \Micro\Matching\MatcherInterface
+     */
+    protected $matcher;
+
+    /**
+     * A UrlTools object for working with requests.
+     *
+     * @var \Micro\Util\UrlTools
+     */
+    protected $ut;
+    
     // Read-Only Properties
-    protected $environment;
     protected $lastRequest;
     protected $lastResponse;
     protected $lastException;
     
-    public function __construct(EnvironmentInterface $env)
+    public function __construct(MatcherInterface $matcher = null, LoggerInterface $tracer = null, UrlTools $ut = null)
     {
-        $this->environment = $env;
-        $this->readOnly = array("environment", "lastRequest", "lastResponse", "lastException");
-        $this->tracer = new NullLogger(); 
+        $this->readOnly = array("lastRequest", "lastResponse", "lastException", "ut", "matcher", "tracer");
+        $this->tracer = $tracer ?: new NullLogger(); 
+        $this->matcher = $matcher ?: new RequestMatcher($this->tracer);
+        $this->ut = $ut ?: new UrlTools();
     }
     
     /**
@@ -84,7 +104,7 @@ class Application implements TraceableInterface
     
     /**
      * Sets the logger to be used to collect trace information and applies
-     * it to the underlying application Controllers.
+     * it to the underlying application Controllers (where applicable).
      * 
      * @param \Psr\Log\LoggerInterface $log
      * @return void
@@ -92,12 +112,14 @@ class Application implements TraceableInterface
     public function tracer(LoggerInterface $log)
     {
         $this->tracer = $log;
+        
+        if ($this->matcher instanceof TraceableInterface) {
+            $this->matcher->tracer($log);
+        }
+        
         foreach ($this->controllers as $controller) {
             if ($controller instanceof TraceableInterface) {
                 $controller->tracer($log);
-            }
-            if ($controller->controller instanceof TraceableInterface) {
-                $controller->controller->tracer($log);
             }
         }
     }
@@ -114,17 +136,14 @@ class Application implements TraceableInterface
      */
     public function attach(ControllerInterface $controller)
     {
-        $matcher = new Util\RequestMatcher($controller);
-        $matcher->tracer($this->tracer);
-        
         if ($controller instanceof TraceableInterface) {
             $controller->tracer($this->tracer);
         }
         
         if ($controller instanceof NotFoundControllerInterface) {
-            $this->notFound = $matcher;
+            $this->notFound = $controller;
         } else {
-            $this->controllers[] = $matcher;
+            $this->controllers[] = $controller;
         }
     }
 
@@ -146,8 +165,8 @@ class Application implements TraceableInterface
         
         $controller = $this->findController($req);
         if ($controller) {
-            $req->request->add($controller->params($req));
-            return $this->dispatch($req, $resp, $controller->controller);
+            $this->addParameters($controller, $req);
+            return $this->dispatch($req, $resp, $controller);
         } else {
             return false;
         }
@@ -217,7 +236,7 @@ class Application implements TraceableInterface
             $this->lastException = $e;
             $this->lastResponse  = false;
             
-            if ($this->debugMode) {
+            if ($this->debugMode) { // Enables better testing
                 throw $e;
             } 
         }
@@ -225,21 +244,36 @@ class Application implements TraceableInterface
     }
     
     /**
-    1 * Returns the appropriate Controller for the current Request.
+     * Returns the appropriate Controller for the current Request.
      * 
      * @param \Micro\Request $req
-     * @return \Micro\Util\RequestMatcher|false
+     * @return \Micro\ControllerInterface|false
      */
     protected function findController(Request $req)
     {
         foreach ($this->controllers as $controller) {
-            if ($controller->matches($req)) {
-                $this->tracer->info("Found Controller {$controller->name}");
+            if ($this->matcher->match($req, $controller)) {
+                $this->tracer->info("Found Controller " . get_class($controller));
                 return $controller;
             }
         }
         
-        $this->tracer->info("No matching end point for {$req->getUri()} discovered, returning not found controller: " . ($this->notFound ? "yes" : "no"));
+        $this->tracer->info("No matching Controller for {$req->getUri()} discovered, returning not found controller: " . ($this->notFound ? "yes" : "no"));
         return $this->notFound ?: false;
+    }
+    
+    /**
+     * Gathers custom parameters from a URL based on the conditions given by
+     * the Controller.
+     * 
+     * @param \Micro\ControllerInterface $controller
+     * @param \Micro\Request $request
+     * @return void
+     */
+    protected function addParameters(ControllerInterface $controller, Request $request)
+    {
+        $regex = $this->ut->compile($controller->uri(), $controller->conditions());
+        $params = $this->ut->parameters($regex, $request->getPathInfo());
+        $request->request->add($params);
     }
 }

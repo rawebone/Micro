@@ -17,6 +17,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
         $this->prophet = $this->getProphet();
     }
     
+    public function tearDown()
+    {
+        $this->prophet->checkPredictions();
+    }
+    
     protected function getProphet()
     {
         return new Prophet();
