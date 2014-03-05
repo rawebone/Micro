@@ -1,11 +1,13 @@
 <?php
 namespace Micro;
 
+use \Teapot\StatusCode\Http;
+
 /**
  * The DefaultController provides a convenient way of configuring Controllers
  * for use in projects.
  */
-abstract class DefaultController implements ControllerInterface
+abstract class DefaultController implements ControllerInterface, Http
 {
     protected $methods = array();
     protected $conditions = array();
