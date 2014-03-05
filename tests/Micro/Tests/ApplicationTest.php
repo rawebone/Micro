@@ -1,6 +1,7 @@
 <?php
 namespace Micro\Tests;
 
+use Prophecy\Argument;
 use Micro\Application;
 use Micro\Request;
 
@@ -98,6 +99,25 @@ class ApplicationTest extends TestCase
         
         $req = Request::create("/");
         $this->assertEquals(false, $app->run($req));
+    }
+    
+    public function testRunWithExceptionalControllerAndErrorController()
+    {
+        $error = $this->getProphet()->prophesize('Micro\ErrorControllerInterface');
+        $error->handle(
+                Argument::type('Symfony\Component\HttpFoundation\Request'),
+                Argument::type('Micro\Responder'),
+                Argument::type('Exception')
+        )->shouldBeCalled()->willReturn(100);
+        
+        $app = new Application();
+        $app->attach(new Fixtures\ExceptionThrowingControllerFixture());
+        $app->attach($error->reveal());
+        
+        $req = Request::create("/");
+        $this->assertEquals(true, $app->run($req));
+        $this->assertInstanceOf("\Exception", $app->lastException);
+        $this->assertEquals(100, $app->lastResponse);
     }
     
     public function testRunWithBadControllerReturn()

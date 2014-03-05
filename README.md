@@ -64,6 +64,21 @@ class Controller extends DefaultController
 
 ```
 
+### Handling Errors and Bad Requests
+
+There are two special controller interfaces which can affect the handling of
+your application - `Micro\ErrorControllerInterface` and `Micro\NotFoundControllerInterface`.
+You can implement these interfaces on an object and attach them, as above, to
+the application instance. 
+
+In the case that an Exception is encountered, the Error Controller will be invoked
+and as expected to return a Response object. Similarly if a Controller for the
+Request is not found, the Not Found Controller will be invoked to provide a
+response for the Client.
+
+Micro will not try and handle any errors or 404's beyond this provisioning.
+
+
 ### Testing
 
 Micro contains a base test case for use in conjunction with PHPUnit that allows

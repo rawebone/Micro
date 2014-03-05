@@ -45,6 +45,13 @@ class Application implements TraceableInterface
     protected $notFound;
     
     /**
+     * The Controller that should be called when an Error is encountered.
+     *
+     * @var \Micro\ErrorControllerInterface
+     */
+    protected $error;
+    
+    /**
      * Stores the names of properties which should be available in a read-only
      * context.
      *
@@ -140,6 +147,8 @@ class Application implements TraceableInterface
         
         if ($controller instanceof NotFoundControllerInterface) {
             $this->notFound = $controller;
+        } else if ($controller instanceof ErrorControllerInterface) {
+            $this->error = $controller;
         } else {
             $this->controllers[] = $controller;
         }
@@ -240,7 +249,9 @@ class Application implements TraceableInterface
             
             if ($this->debugMode) { // Enables better testing
                 throw $e;
-            } 
+            } else if ($this->error !== null) { // User defined processing
+                $this->lastResponse = $this->error->handle($req, $resp, $e);
+            }
         }
         return ($this->lastResponse !== false);
     }
