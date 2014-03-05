@@ -38,11 +38,9 @@ class Application implements TraceableInterface
     protected $controllers = array();
 
     /**
-     * The Controller that should be called when a URI cannot be matched,
-     * encapsulated by a RequestMatcher. Encapsulation allows for caching
-     * of regex compilation so that repeat actions are faster.
+     * The Controller that should be called when a URI cannot be matched.
      * 
-     * @var \Micro\Util\RequestMatcher
+     * @var \Micro\NotFoundControllerInterface.
      */
     protected $notFound;
     
