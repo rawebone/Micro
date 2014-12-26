@@ -10,6 +10,12 @@ small, reliable applications. Its goals are to:
 * Provide the ability to fully test and profile the application layer with ease
 * Provide the ability to debug the request process to see exactly why an error is occurring
 
+> Please be aware that I am lowering my support for this project in favor of
+> [Wilson](https://github.com/rawebone/Wilson) which is in part based off of this
+> project but is more performant and has an overall better design. If anyone
+> is interested in taking joint ownership of the project then feel free to get in
+> contact, or send in PR's and I'll merge.
+
 ## Usage
 
 The basic usage of the application is:
