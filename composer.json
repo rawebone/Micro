@@ -21,12 +21,12 @@
         "phpspec/prophecy": "1.1.*"
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Micro\\": [ "library/" ]
         }
     },
     "autoload-dev": {
-        "psr-0": {
+        "psr-4": {
             "Micro\\Tests\\": [ "tests/" ]
         }
     }
